@@ -1,6 +1,7 @@
 import { GoogleGenAI, Content, Part, ThinkingLevel } from "@google/genai";
-import { SUPERVISOR_PROMPT, PLANNER_PROMPT, VERIFIER_PROMPT, searchWebTool, searchMapsTool, generateImageTool, saveArtifactTool, readUrlTool, calculatorTool, getWeatherTool, getCurrentTimeTool, saveMemoryTool, searchMemoryTool, solveLogicProblemTool, executeTdadTaskTool, semanticDataTool, getBestStrategyTool, rewardStrategyTool } from "./config";
+import { SUPERVISOR_PROMPT, PLANNER_PROMPT, VERIFIER_PROMPT, searchWebTool, searchMapsTool, generateImageTool, saveArtifactTool, readUrlTool, calculatorTool, getWeatherTool, getCurrentTimeTool, saveMemoryTool, searchMemoryTool, solveLogicProblemTool, executeTdadTaskTool, semanticDataTool, getBestStrategyTool, rewardStrategyTool, executeCodeTool } from "./config";
 import { runSearchWorker } from "./workers/search";
+import { runExecuteCodeWorker } from "./workers/executeCode";
 import { runMapsWorker } from "./workers/maps";
 import { runGenerateImageWorker } from "./workers/generateImage";
 import { runReadUrlWorker } from "./workers/readUrl";
@@ -83,8 +84,7 @@ export async function runSupervisor(
         contents,
         config: {
           systemInstruction: SUPERVISOR_PROMPT,
-          // Bounded Autonomy: Mask tools dynamically (For simplicity, we pass all here, but you can filter based on plan step)
-          tools: [{ functionDeclarations: [searchWebTool, searchMapsTool, generateImageTool, saveArtifactTool, readUrlTool, calculatorTool, getWeatherTool, getCurrentTimeTool, saveMemoryTool, searchMemoryTool, solveLogicProblemTool, executeTdadTaskTool, semanticDataTool, getBestStrategyTool, rewardStrategyTool] }],
+          tools: [{ functionDeclarations: [searchWebTool, searchMapsTool, generateImageTool, saveArtifactTool, readUrlTool, calculatorTool, getWeatherTool, getCurrentTimeTool, saveMemoryTool, searchMemoryTool, solveLogicProblemTool, executeTdadTaskTool, semanticDataTool, getBestStrategyTool, rewardStrategyTool, executeCodeTool] }],
           thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
         }
       });
@@ -176,6 +176,10 @@ export async function runSupervisor(
               onStep({ id: stepId, type: 'tool_call', message: `Updating RL weights for strategy: ${call.args.strategy}` });
               result = await rewardStrategy(call.args.taskType as string, call.args.strategy as string, call.args.successScore as number);
               onStep({ id: stepId + '_res', type: 'tool_result', message: `RL weights updated.` });
+            } else if (call.name === "execute_code") {
+              onStep({ id: stepId, type: 'tool_call', message: `Executing code on environment: ${call.args.language}` });
+              result = await runExecuteCodeWorker(call.args.language as string, call.args.code as string);
+              onStep({ id: stepId + '_res', type: 'tool_result', message: `Execution completed.` });
             } else {
               result = "Unknown tool requested.";
             }

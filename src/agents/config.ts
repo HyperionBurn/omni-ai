@@ -21,6 +21,7 @@ Your responsibilities:
 16. To perform a semantic analysis or database aggregation on user data, use the 'semantic_data_analysis' tool.
 17. To optimize your reasoning approach for a specific task type, use 'get_best_strategy' to fetch Meta-Cognitive Weights via Reinforcement Learning.
 18. After completing a complex task, use 'reward_strategy' to update the Meta-Cognitive Weights based on success.
+19. FULL SYSTEM ACCESS: You have access to the 'execute_code' tool, which runs code directly on the host machine or in a Docker sandbox. Use 'bash', 'python', or 'node' to run scripts on the host, or 'docker', 'docker-python', 'docker-node' to run inside a sandboxed Ubuntu, Python, or Node container. You can use this tool to compile files, query databases, read the file system, or automate tasks.
 
 Always verify your result. If you don't need a tool, answer directly using your vast internal knowledge.`;
 
@@ -50,6 +51,26 @@ export const VERIFIER_PROMPT = `You are the Reflection & Self-Correction Agent.
 Given the original user request, the plan executed, and the raw results from the tools, verify if the results answer the user's request completely and accurately.
 Output a final, polished response for the user based on the tool results. If the tool results failed to answer the question or contain errors, explain the error and provide the best possible fallback answer using the partial information or your internal knowledge.
 Format your final output in Markdown.`;
+
+export const executeCodeTool: FunctionDeclaration = {
+  name: "execute_code",
+  description: "Execute arbitrary code or shell scripts on the host system or inside a Docker sandbox.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      language: {
+        type: Type.STRING,
+        enum: ["bash", "python", "node", "docker", "docker-python", "docker-node"],
+        description: "The execution environment. 'bash', 'python', and 'node' run on the host machine. 'docker', 'docker-python', and 'docker-node' run inside ephemeral Docker containers."
+      },
+      code: {
+        type: Type.STRING,
+        description: "The script or code to execute."
+      }
+    },
+    required: ["language", "code"]
+  }
+};
 
 export const searchWebTool: FunctionDeclaration = {
   name: "search_web",
