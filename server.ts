@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
+import mcpServerRouter from "./src/agents/mcpServer";
 
 async function startServer() {
   const app = express();
@@ -12,6 +13,9 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
+
+  // Mock Model Context Protocol (MCP) server endpoints
+  app.use("/api", mcpServerRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

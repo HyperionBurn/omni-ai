@@ -20,25 +20,23 @@ export async function runLogicSolverWorker(problem: string): Promise<string> {
 
   const solutions = await Promise.all(promises);
 
-  // Voter/Summarizer Agent
-  const voterPrompt = `You are a consensus-building agent. You have been given a logic problem and 3 different solutions from 3 different expert agents with varied contexts.
+  // Multi-Agent Reinforcement Learning (MARL) for Social Metrics & Autocurricula via Self-Play
+  // Simulate a debate and scoring mechanism where agents evaluate each other
+  const debatePrompt = `You are a MARL Referee Agent.
 Problem: ${problem}
 
-Expert 1 (Analytical):
-${solutions[0]}
+Expert 1 (Analytical): ${solutions[0]}
+Expert 2 (Lateral): ${solutions[1]}
+Expert 3 (Practical): ${solutions[2]}
 
-Expert 2 (Lateral):
-${solutions[1]}
+1. Evaluate each expert's solution on 'Cooperation' (how well it builds on accepted logic), 'Negotiation' (how well it addresses counter-arguments), and 'Accuracy'.
+2. Provide a numerical score (0-100) for each expert.
+3. Synthesize the final, definitive answer based on the highest-scoring arguments.`;
 
-Expert 3 (Practical):
-${solutions[2]}
-
-Analyze the 3 solutions, identify the correct reasoning, point out any flaws in the incorrect ones, and provide the final, definitive answer.`;
-
-  const finalResponse = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: voterPrompt
+  const debateResponse = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: debatePrompt
   });
 
-  return `### Collaborative Agent Analysis\n\n**Expert 1 (Analytical):**\n${solutions[0]}\n\n**Expert 2 (Lateral):**\n${solutions[1]}\n\n**Expert 3 (Practical):**\n${solutions[2]}\n\n### Final Consensus\n${finalResponse.text || "Failed to reach consensus."}`;
+  return `### MARL Collaborative Analysis & Self-Play Debate\n\n**Expert 1 (Analytical):**\n${solutions[0]}\n\n**Expert 2 (Lateral):**\n${solutions[1]}\n\n**Expert 3 (Practical):**\n${solutions[2]}\n\n### MARL Referee Scoring & Consensus\n${debateResponse.text || "Failed to reach consensus."}`;
 }
