@@ -4,6 +4,7 @@ import path from "path";
 import { exec } from "child_process";
 import fs from "fs/promises";
 import crypto from "crypto";
+import mcpServerRouter from "./src/agents/mcpServer";
 
 async function startServer() {
   const app = express();
@@ -84,6 +85,9 @@ async function startServer() {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // Mock Model Context Protocol (MCP) server endpoints
+  app.use("/api", mcpServerRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
